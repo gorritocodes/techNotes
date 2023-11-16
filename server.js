@@ -1,10 +1,22 @@
 const express = require("express");
 const app = express();
 const path = require("path");
+const { logger } = require("./middleware/logger");
+const errorHandler = require("./middleware/errorHandler");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
 const PORT = process.env.PORT || 3500;
+
+//allow the application to use the custom middleware "logger" that allows us to generate logs
+app.use(logger);
+//allow the application to solve cross origins problems.
+app.use(cors(corsOptions));
 
 // allow the application to handle JSON files and parse Json
 app.use(express.json());
+//allow the application to handle cookies.
+app.use(cookieParser());
 
 //indicates the application where to find the static files to be serve through the entire application.
 app.use("/", express.static(path.join(__dirname, "public")));
@@ -23,6 +35,9 @@ app.all("*", (req, res) => {
 		res.type("txt").send("404 Not Found");
 	}
 });
+
+//allows the use of the custom error Handler middleware
+app.use(errorHandler);
 
 //Makes the server Run in the selected Port.
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
